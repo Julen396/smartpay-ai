@@ -15,3 +15,6 @@
 
 /* V3.1: editable product selection before payment */
 .product.is-selected{border-color:#91ceff;box-shadow:0 0 0 1px #91ceff}.product.is-selected button{background:#88caff;color:#0b2548}.product button:disabled,.secondary-action:disabled{opacity:.55;cursor:not-allowed}.checkout #change-product{margin:0 0 4px}.product-list{scroll-margin-top:18px}
+
+/* V3.3: separate evaluation from checkout */
+.product.is-selected .choose-product{background:#24476b;color:#d5eaff;border-color:#80baff}.product .proceed-checkout{margin-top:8px;background:#88caff;color:#0b2548;border-color:#88caff}.product .proceed-checkout:hover,.insight-checkout:hover{background:#b8e0ff;color:#0b2548}.insight-checkout{background:#88caff;color:#0b2548}.compare-scroll .selected-option{background:#24476b;box-shadow:inset 2px 0 #81c9ff}.compare-scroll thead .selected-option{color:#d5eaff}

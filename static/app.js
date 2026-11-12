@@ -25,17 +25,22 @@ function renderProduct(p) {
   const art=document.createElement('img');art.className='product-image';art.src=p.image;art.alt=`Illustration of ${p.name} (fictional demo product)`;card.append(art);
   for(const [tag,cls,text] of [['div','product-category',p.category],['h3','',p.name],['p','product-description',p.description],['div','product-price',euro(p.price)],['div','product-meta',`${p.risk.label} · ${p.match_score.toFixed(1)} ranking points`]]){const e=document.createElement(tag);e.className=cls;e.textContent=text;card.append(e);}
   if(p===state.recommendations[0]){const label=document.createElement('span');label.className='best-match';label.textContent='Top ranked match';card.prepend(label);}
-  const b=document.createElement('button');b.dataset.sku=p.sku;b.textContent='Choose this product →';b.addEventListener('click',()=>chooseProduct(p,b));card.append(b);return card;
+  const b=document.createElement('button');b.type='button';b.className='choose-product';b.dataset.sku=p.sku;b.textContent='Choose this product →';b.addEventListener('click',()=>chooseProduct(p));card.append(b);
+  const next=document.createElement('button');next.type='button';next.className='proceed-checkout';next.dataset.checkoutSku=p.sku;next.textContent='Proceed to checkout →';next.hidden=true;next.addEventListener('click',proceedToCheckout);card.append(next);return card;
 }
 function syncControls(){
   const locked=state.busy||state.checkoutOpen||state.paymentComplete||state.paymentUncertain;
-  document.querySelectorAll('.product button').forEach(b=>{
+  document.querySelectorAll('.choose-product').forEach(b=>{
     const selected=b.dataset.sku===state.selected?.sku;
     b.disabled=locked;
-    b.textContent=selected?'✓ Selected — choose again':'Choose this product →';
+    b.textContent=selected?'✓ Selected':'Choose this product →';
     b.setAttribute('aria-pressed',String(selected));
     b.closest('.product').classList.toggle('is-selected',selected);
   });
+  document.querySelectorAll('.proceed-checkout').forEach(b=>{b.hidden=b.dataset.checkoutSku!==state.selected?.sku||state.paymentComplete||state.paymentUncertain;b.disabled=locked;});
+  $('insight-checkout').hidden=!state.selected||state.paymentComplete||state.paymentUncertain;
+  $('insight-checkout').disabled=locked;
+  document.querySelectorAll('#comparison-table [data-compare-sku]').forEach(cell=>cell.classList.toggle('selected-option',cell.dataset.compareSku===state.selected?.sku));
   $('change-product').disabled=locked;
   $('change-product').hidden=state.paymentComplete||state.paymentUncertain;
   $('analyze').disabled=state.busy||state.checkoutOpen||state.paymentUncertain;
@@ -48,12 +53,12 @@ async function clearPayPal(){
 function renderComparison(){
   const items=state.recommendations;const table=$('comparison-table');table.replaceChildren();$('comparison').hidden=items.length<2;if(items.length<2)return;
   const head=table.createTHead().insertRow();
-  for(const name of ['Criteria',...items.map(p=>p.name)]){const th=document.createElement('th');th.scope='col';th.textContent=name;head.append(th);}
+  for(const [i,name] of ['Criteria',...items.map(p=>p.name)].entries()){const th=document.createElement('th');th.scope='col';th.textContent=name;if(i)th.dataset.compareSku=items[i-1].sku;head.append(th);}
   const body=table.createTBody();
   const rows=[['Price',p=>euro(p.price)],['Features',p=>p.description],['Ranking points',p=>p.match_score.toFixed(1)],['Funds used',p=>pct(p.price,state.budget.available)+'%'],['Funds remaining',p=>euro(moneyLeft(state.budget.available,p.price))]];
-  for(const [label,get] of rows){const tr=body.insertRow();const th=document.createElement('th');th.scope='row';th.textContent=label;tr.append(th);for(const p of items){tr.insertCell().textContent=get(p);}}
+  for(const [label,get] of rows){const tr=body.insertRow();const th=document.createElement('th');th.scope='row';th.textContent=label;tr.append(th);for(const p of items){const cell=tr.insertCell();cell.textContent=get(p);cell.dataset.compareSku=p.sku;}}
   const cheapest=items.reduce((a,b)=>a.price<=b.price?a:b), expensive=items.reduce((a,b)=>a.price>=b.price?a:b);
-  $('comparison-note').textContent=`${items[0].name} is the top-ranked match. ${cheapest.name} is the lowest-priced option${expensive.price>cheapest.price?`, saving ${euro(moneyLeft(expensive.price,cheapest.price))} compared with ${expensive.name}`:''}. Ranking reflects catalogue relevance and affordability, not measured product quality.`;
+  $('comparison-note').textContent=`${items[0].name} is the top-ranked match. ${cheapest.name} is the lowest-priced option${expensive.price>cheapest.price?`, saving ${euro(moneyLeft(expensive.price,cheapest.price))} compared with ${expensive.name}`:''}. Ranking reflects catalogue relevance and affordability, not measured product quality.${state.selected?` Your selected option is ${state.selected.name}.`:''}`;
 }
 function renderInsights(product,budget,selected=false){
   $('insights').hidden=false;const percent=pct(budget.price,budget.available);
@@ -96,24 +101,40 @@ async function loadPayPal(clientId){
   await sdkPromise;if(!window.paypal)throw Error('PayPal SDK unavailable.');
 }
 async function chooseProduct(product){
-  if(state.busy||state.checkoutOpen||state.paymentComplete||state.paymentUncertain)return;
+  if(state.busy||state.checkoutOpen||state.paymentComplete||state.paymentUncertain)return false;
   state.busy=true;syncControls();setStatus('');
   try{
-    // If an order was attempted (e.g. cancelled), create a new analysis session.
-    // Never attach a different SKU to an existing PayPal order.
+    // Selection updates decision support only. An attempted order is never reused for a different selection.
     await clearPayPal();
+    $('checkout').hidden=true;$('checkout-status').textContent='';$('approval-info').hidden=true;
+    state.selected=null;syncControls();
     if(state.orderAttempted){
       const fresh=await postJson('/api/recommend',state.request);
       state.sessionId=fresh.session_id;state.orderAttempted=false;
     }
-    const sessionId=state.sessionId;
-    const result=await postJson('/api/select',{session_id:sessionId,sku:product.sku,confirmed:true});
-    state.selected=result.product;setStep(3);syncControls();
-    $('approval-info').hidden=false;$('approval-info').textContent=`✓ You selected ${product.name} for ${euro(product.price)}. You can change your selection before paying. PayPal will ask for final approval.`;
-    renderInsights(product,result.budget,true);$('checkout').hidden=false;$('checkout-summary').textContent=`${product.name} · ${euro(product.price)} · EUR · Sandbox funds only`;
-    $('paypal-button-container').hidden=false;$('checkout-status').textContent='';
-    if(!state.config||!state.config.paypal_ready){$('checkout-status').textContent='PayPal Sandbox is not configured. Add credentials to .env and restart the server.';navigate('checkout');return;}
-    await loadPayPal(state.config.paypal_client_id);setStep(4);
+    const result=await postJson('/api/select',{session_id:state.sessionId,sku:product.sku,confirmed:true});
+    state.selected=result.product;setStep(3);
+    $('approval-info').hidden=false;$('approval-info').textContent=`✓ You selected ${product.name} for ${euro(product.price)}. Compare your options or proceed to checkout when ready. PayPal will ask for final approval.`;
+    renderComparison();renderInsights(product,result.budget,true);
+    return true;
+  }catch(err){setStatus(err.message);return false;}
+  finally{state.busy=false;syncControls();}
+}
+async function proceedToCheckout(){
+  if(!state.selected||state.busy||state.checkoutOpen||state.paymentComplete||state.paymentUncertain)return;
+  if(state.orderAttempted){
+    const product=state.recommendations.find(p=>p.sku===state.selected.sku);
+    if(!product||!(await chooseProduct(product)))return;
+  }
+  if(state.buttons&&!$('checkout').hidden){navigate('checkout');return;}
+  state.busy=true;syncControls();setStatus('');
+  const product=state.selected,sessionId=state.sessionId;
+  try{
+    $('checkout').hidden=false;$('checkout-summary').textContent=`${product.name} · ${euro(product.price)} · EUR · Sandbox funds only`;
+    $('paypal-button-container').hidden=false;$('checkout-status').textContent='Preparing PayPal Sandbox…';
+    navigate('checkout');setStep(4);
+    if(!state.config||!state.config.paypal_ready){$('checkout-status').textContent='PayPal Sandbox is not configured. Add credentials to .env and restart the server.';return;}
+    await loadPayPal(state.config.paypal_client_id);
     const buttons=window.paypal.Buttons({
       style:{layout:'vertical',color:'gold',shape:'rect',label:'paypal'},
       onClick:(_data,actions)=>{
@@ -129,17 +150,18 @@ async function chooseProduct(product){
         }catch(err){state.paymentUncertain=true;$('checkout-status').textContent=err.message+' Verify the payment in PayPal Sandbox before starting another purchase.';}
         finally{state.checkoutOpen=false;syncControls();}
       },
-      onCancel:()=>{if(state.buttons!==buttons)return;state.checkoutOpen=false;syncControls();$('checkout-status').textContent='Payment cancelled. Choose another product or select this one again to prepare a new order.';},
+      onCancel:()=>{if(state.buttons!==buttons)return;state.orderAttempted=true;state.checkoutOpen=false;syncControls();$('paypal-button-container').hidden=true;$('checkout-status').textContent='Payment cancelled. Return to your selection and choose Proceed to checkout to prepare a new order.';},
       onError:err=>{if(state.buttons!==buttons)return;state.checkoutOpen=false;syncControls();$('checkout-status').textContent='PayPal Checkout error: '+(err?.message||'See browser console');}
-    });state.buttons=buttons;await buttons.render('#paypal-button-container');navigate('checkout');
+    });state.buttons=buttons;await buttons.render('#paypal-button-container');$('checkout-status').textContent='';
   }catch(err){setStatus(err.message);$('checkout-status').textContent=err.message;}
   finally{state.busy=false;syncControls();}
 }
 window.addEventListener('DOMContentLoaded',async()=>{
   $('search-form').addEventListener('submit',analyze);
+  $('insight-checkout').addEventListener('click',proceedToCheckout);
   $('change-product').addEventListener('click',()=>{$('product-list').scrollIntoView({behavior:'smooth',block:'start'});document.querySelector('.product button:not(:disabled)')?.focus({preventScroll:true});});
   document.querySelectorAll('[data-query]').forEach(b=>b.addEventListener('click',()=>{$('query').value=b.dataset.query;$('query').focus();}));
-  document.querySelectorAll('[data-nav]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();navigate(a.dataset.nav);}));
+  document.querySelectorAll('[data-nav]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();if(a.dataset.nav==='checkout'&&state.selected&&!state.paymentComplete&&!state.paymentUncertain){proceedToCheckout();}else{navigate(a.dataset.nav);}}));
   $('new-purchase').addEventListener('click',()=>{$('results-section').hidden=true;setStep(1);navigate('shopping');$('query').focus();});
   try{const r=await fetch('/api/config');state.config=await r.json();}catch{setStatus('Could not load server configuration.');}
 });

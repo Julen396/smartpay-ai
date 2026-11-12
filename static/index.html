@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#09151e" />
   <title>SmartPay AI — smarter shopping, safer checkout</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/styles.css?v=3.1" />
-  <script src="/static/app.js?v=3.1" defer></script>
+  <link rel="stylesheet" href="/static/styles.css?v=3.3" />
+  <script src="/static/app.js?v=3.3" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -36,7 +36,7 @@
             <form id="search-form">
               <label for="query">YOUR REQUEST</label>
               <textarea id="query" required minlength="3" maxlength="300" rows="3" placeholder="I need noise-cancelling headphones for working, under €100...">I need noise-cancelling headphones for work</textarea>
-              <div class="form-grid"><div><label for="max-price">MAXIMUM PURCHASE (€)</label><div class="input-wrap"><span>€</span><input id="max-price" type="number" min="1" max="10000" step="0.01" value="100" required /></div></div><div><label for="available">MONTHLY FUNDS AVAILABLE (€)</label><div class="input-wrap"><span>€</span><input id="available" type="number" min="0" max="100000" step="0.01" value="180" required /></div></div></div>
+              <div class="form-grid"><div><label for="max-price">MAXIMUM PURCHASE (€)</label><div class="input-wrap"><span>€</span><input id="max-price" type="number" min="10" max="10000" step="10" value="100" required /></div></div><div><label for="available">MONTHLY FUNDS AVAILABLE (€)</label><div class="input-wrap"><span>€</span><input id="available" type="number" min="0" max="100000" step="10" value="180" required /></div></div></div>
               <button id="analyze" type="submit" class="primary">✧ &nbsp; Analyze my request <span>→</span></button>
             </form>
             <div class="suggestions"><span>TRY THIS</span><button data-query="I need an external SSD for backups">External SSD</button><button data-query="I need a mechanical keyboard for coding and gaming">Gaming keyboard</button><button data-query="I need comfortable headphones for travel">Travel headphones</button></div>
@@ -70,6 +70,7 @@
             <div class="impact-track" id="impact-track" role="progressbar" aria-label="Budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="impact-fill"></div></div>
             <p id="insight-note" class="decision-note"></p>
             <p class="fine-print">Illustrative analysis of your stated funds, not a bank balance or financial advice.</p>
+            <button id="insight-checkout" type="button" class="secondary-action insight-checkout" hidden>Proceed to checkout →</button>
           </section>
           <div id="approval-info" class="info-note" hidden></div>
           <div id="checkout" class="checkout" hidden><div class="checkout-head"><div><span class="small-heading">FINAL STEP</span><h3>Complete your sandbox payment</h3></div><span>🔒</span></div><p id="checkout-summary"></p><button id="change-product" class="secondary-action" type="button">← Change product</button><div id="paypal-button-container"></div><div id="checkout-status" role="status"></div></div>
