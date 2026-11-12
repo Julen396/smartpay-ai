@@ -91,39 +91,25 @@ Receipts are stored in ephemeral application sessions. The prototype does not ma
 
 ## Application workflow
 
-```text
-Natural-language shopping request
-    |
-    v
-Product-type and feature filtering
-    |
-    v
-Server-side budget constraints
-    |
-    v
-Local TF-IDF recommendation ranking
-    |
-    v
-Explainable recommendations and product comparison
-    |
-    v
-Product selection and Smart Budget Insights
-    |
-    v
-User explicitly proceeds to checkout
-    |
-    v
-PayPal Sandbox order creation
-    |
-    v
-PayPal-hosted buyer approval
-    |
-    v
-Server-side capture and verification
-    |
-    v
-Verified payment receipt
+```mermaid
+flowchart TD
+    A["Natural-language shopping request"] --> B["Product & feature filtering"]
+    B --> C["Budget constraints & ML ranking"]
+    C --> D["Explainable recommendations"]
+    D --> E["Product comparison & Smart Budget Insights"]
+    E --> F["User selects product"]
+    F --> G["Proceed to checkout"]
+    G --> H["PayPal Sandbox approval"]
+    H --> I["Server-side capture & verification"]
+    I --> J["Verified payment receipt"]
+
+    style A fill:#1e40af,color:#fff,stroke:#60a5fa
+    style C fill:#1e3a5f,color:#fff,stroke:#60a5fa
+    style E fill:#1e3a5f,color:#fff,stroke:#60a5fa
+    style H fill:#003087,color:#fff,stroke:#009cde
+    style J fill:#065f46,color:#fff,stroke:#34d399
 ```
+
 
 ## Technology stack
 
