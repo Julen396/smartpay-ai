@@ -1,29 +1,17 @@
-# 2 minute 40 second English demo script (after Sandbox is configured)
+# SmartPay AI v3 — silent demo plan (2:45)
 
-**Important:** This is a *script*, not a finished recording. Record your own functioning application. Only state "payment completed" if PayPal Sandbox actually confirms it.
+Record a real run, in English, with OBS display capture at 1080p/30fps. Mute microphone; hide credentials and buyer account details. Use a Sandbox buyer account already signed in. The SRT timings are targets; adjust to actual footage.
 
-**00:00–00:15 — Problem / hook**
-> AI agents can help us shop, but they shouldn't spend our money without control. Meet SmartPay AI: an explainable purchasing copilot with a human-approved PayPal checkout.
+| Time | On screen |
+|---|---|
+| 0:00–0:15 | Homepage and SmartPay AI title. |
+| 0:15–0:35 | Query: I need noise-cancelling headphones for work. Max EUR 100, available EUR 180. Analyze. |
+| 0:35–0:55 | Two ANC matches and reasoning; no unrelated products. |
+| 0:55–1:15 | Scroll to comparison: Travel EUR 59.90 vs Studio EUR 89.00, EUR 29.10 difference. |
+| 1:15–1:35 | Risk Insights: EUR 120.10 remaining, 33% used for the Travel option. |
+| 1:35–1:50 | Reduce maximum price to EUR 60, analyze again; only Travel remains. |
+| 1:50–2:05 | Choose Travel ANC, show approval and checkout. |
+| 2:05–2:30 | Complete a genuine PayPal Sandbox payment, without exposing login details. |
+| 2:30–2:45 | Verified receipt, remaining funds and order/capture IDs. |
 
-**00:15–00:35 — Natural language request**
-> I enter: "I want noise-cancelling headphones for working." My maximum price is 100 euros, and I have 180 euros left this month.
-
-**00:35–01:15 — Real AI recommendation**
-> A local machine-learning model matches my request against the demo catalogue, filters out options that violate my limits, and ranks the remaining products. The explanation is transparent, and an optional LLM makes it even more conversational. It cannot change any payment amount.
-
-**01:15–01:40 — Guardrails**
-> Every recommendation includes a spending-risk indicator. To demonstrate the guardrail, I'll lower my budget: options above it immediately disappear. The catalogue and prices are fictional; this is a proof of concept.
-
-**01:40–02:20 — PayPal Sandbox integration**
-> I select a recommended product. Nothing is charged yet. The server creates a PayPal order using its own verified product price. I then approve the transaction in PayPal's Sandbox checkout. [SHOW ACTUAL TEST BUYER LOGIN AND APPROVAL, HIDE ANY SENSITIVE DETAILS.] The server captures the order and displays PayPal's response.
-
-**02:20–02:40 — Takeaway**
-> The idea is simple: AI for discovery and reasoning, strict guardrails for spending, and PayPal for checkout. SmartPay AI shows how agentic commerce can preserve human control.
-
-## Capture checklist
-
-- Use only sandbox buyer/merchant accounts; keep secrets and email addresses out of frame.
-- Show real UI interaction and the actual sandbox result. No static-only mockup.
-- Ensure your recording is **strictly shorter than 03:00**.
-- Upload as a **public YouTube video** (not Unlisted, to comply with the rules).
-- Link your public repository and Devpost entry.
+Only show a successful receipt if the payment completes. All products and funds are fictional/test data. Keep final recording under 3 minutes. Publish the video in accordance with the hackathon rules and attach the public repository URL to Devpost.

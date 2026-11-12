@@ -7,10 +7,10 @@ SmartPay AI — Explainable Agentic Checkout
 An AI shopping copilot that recommends products within your budget, explains why, and only prepares a PayPal Sandbox checkout after explicit human approval.
 
 ## Inspiration
-Agentic commerce is exciting, but allowing an AI to initiate payments without transparent limits creates a trust problem. We wanted a simple rule: the AI can advise and prepare a transaction; the buyer retains the final decision.
+Agentic commerce is exciting, but allowing an AI to initiate payments without transparent limits creates a trust problem. I wanted a simple rule: the AI can advise and prepare a transaction; the buyer retains the final decision.
 
 ## What it does
-The customer describes a desired product and sets a maximum purchase price and monthly funds available. SmartPay AI uses a local machine-learning retrieval model to find relevant examples in a fictional catalogue, enforces budget constraints, and gives an explanation that can optionally be enhanced by an LLM. After the customer chooses an option, a server-side integration with PayPal's Orders v2 creates the order. The PayPal Checkout SDK collects buyer approval and the server captures a Sandbox payment.
+The customer describes a desired product and sets a maximum purchase price and monthly funds available. SmartPay AI uses a local machine-learning retrieval model to find relevant examples in a fictional catalogue, enforces budget constraints, and gives an explanation that can optionally be enhanced by an LLM. After the customer chooses an option, a server-side integration with PayPal's Orders v2 creates the order. The PayPal Checkout SDK collects buyer approval and the server captures a Sandbox payment. A side-by-side comparison explains the shortlist, and Smart Budget Insights shows the estimated funds remaining. A verified capture generates a receipt with PayPal order and capture IDs.
 
 ## How we built it
 Python / FastAPI / scikit-learn TF-IDF / optional OpenAI-compatible LLM / HTML, CSS, JS / PayPal REST API Orders v2 / PayPal JavaScript SDK. No real money or production PayPal credentials are used.
@@ -19,7 +19,7 @@ Python / FastAPI / scikit-learn TF-IDF / optional OpenAI-compatible LLM / HTML, 
 Balancing agent autonomy with buyer control; making server-side spending limits authoritative; isolating model output from payment execution; creating a clear end-to-end demo in a short timeframe.
 
 ## Accomplishments we're proud of
-[Update this after testing:] Transparent matching, dual budget checks, explicit approval and server-authoritative order amounts. PayPal Sandbox payment confirmed with a test buyer account: [Yes / Not yet].
+Transparent matching, dual budget checks, explainable comparisons, explicit approval and server-authoritative order amounts. An earlier version completed a real Sandbox test payment. The latest receipt flow is covered by simulated capture tests; verify it manually before submitting the final demo.
 
 ## What's next
 Multi-merchant comparisons with live merchant integrations, user-defined risk preferences, transaction audit logs, and fully authenticated multi-user session storage.

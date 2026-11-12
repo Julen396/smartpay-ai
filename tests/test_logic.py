@@ -77,3 +77,48 @@ def test_product_artwork():
         response = client.get(product['image'])
         assert response.status_code == 200
     assert client.get('/static/favicon.svg').status_code == 200
+
+
+def _selected_session():
+    data = client.post('/api/recommend', json={'query':'noise-cancelling headphones','max_price':60,'monthly_available':180}).json()
+    assert data['budget'] == {'max_price':60, 'available':180}
+    session = data['session_id']
+    chosen = client.post('/api/select', json={'session_id':session,'sku':'AUDIO-011','confirmed':True}).json()
+    assert chosen['budget']['remaining'] == 120.10
+    assert chosen['budget']['price'] == 59.90
+    return session
+
+
+def test_verified_receipt_and_repeat_capture(monkeypatch):
+    import app as module
+    calls=[]
+    async def mock_post(client, endpoint, payload=None, request_id=None):
+        calls.append(endpoint)
+        if endpoint == '/v2/checkout/orders':
+            assert payload['purchase_units'][0]['amount'] == {'currency_code':'EUR','value':'59.90'}
+            return {'id':'ORDER-TEST'}
+        return {'id':'ORDER-TEST','status':'COMPLETED','purchase_units':[{'payments':{'captures':[{'id':'CAPTURE-TEST','status':'COMPLETED','amount':{'currency_code':'EUR','value':'59.90'}}]}}]}
+    monkeypatch.setattr(module,'paypal_post',mock_post)
+    session=_selected_session()
+    assert client.post('/api/paypal/orders',json={'session_id':session}).json()['id']=='ORDER-TEST'
+    url='/api/paypal/orders/ORDER-TEST/capture'
+    result=client.post(url,json={'session_id':session}).json()
+    assert result['status']=='COMPLETED'
+    assert result['receipt']['capture_id']=='CAPTURE-TEST'
+    assert result['receipt']['budget']['remaining']==120.10
+    assert client.post(url,json={'session_id':session}).json()['receipt']==result['receipt']
+    assert len(calls)==2
+
+
+def test_pending_and_mismatched_capture_no_receipt(monkeypatch):
+    import app as module
+    reply={'id':'ORDER-TEST','status':'PENDING'}
+    async def mock_post(client, endpoint, payload=None, request_id=None):
+        return {'id':'ORDER-TEST'} if endpoint=='/v2/checkout/orders' else reply
+    monkeypatch.setattr(module,'paypal_post',mock_post)
+    session=_selected_session()
+    client.post('/api/paypal/orders',json={'session_id':session})
+    url='/api/paypal/orders/ORDER-TEST/capture'
+    assert client.post(url,json={'session_id':session}).json()['receipt'] is None
+    reply.update(status='COMPLETED',purchase_units=[{'payments':{'captures':[{'id':'CAPTURE-TEST','status':'COMPLETED','amount':{'currency_code':'EUR','value':'1.00'}}]}}])
+    assert client.post(url,json={'session_id':session}).status_code==502

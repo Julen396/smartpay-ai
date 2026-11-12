@@ -17,6 +17,13 @@ Product illustrations are original SVG artwork created for this fictional catalo
 - **PayPal Orders v2:** OAuth token retrieval, server-side order creation, browser Checkout Buttons, server-side capture, verified session-order association.
 - **Visible safety:** sandbox-only merchant flow, no browser-accessible PayPal client secret, no hard-coded LLM key, in-memory 30-minute sessions.
 
+### V3: explainable purchasing decisions
+
+- Side-by-side comparison of the ML-ranked shortlist: price, catalogue features, ranking score, share of funds and remaining funds. Ranking points are not product-quality measurements.
+- Smart Budget Insights previews the top match and updates when the user selects a product. The selection endpoint returns server-calculated budget figures.
+- After PayPal reports a completed EUR capture matching the server-side amount, a receipt shows the order ID, capture ID, total paid and projected remaining funds for this purchase. Cancelled, pending or mismatched captures never display a successful receipt. The receipt is held in the ephemeral session; there is no persistent spending ledger or bank connection.
+- Sidebar navigation links to the request, insights and checkout sections.
+
 ## Quick start (Python 3.10+)
 
 ```bash
@@ -61,7 +68,7 @@ pip install -r requirements-dev.txt
 pytest -q
 ```
 
-Tests check the recommender, unauthorised orders, server-side budget constraints and deliberate user selection. **Live Sandbox API connectivity must be tested manually with your own keys**; local tests do not prove PayPal checkout completion.
+Tests check the recommender, unauthorised orders, server-side budget constraints, deliberate user selection, capture amount verification, pending captures and repeated receipt retrieval. PayPal responses in the capture tests are simulated. **Live Sandbox API connectivity must be tested manually with your own keys**; local tests do not prove PayPal checkout completion.
 
 ## API summary
 
