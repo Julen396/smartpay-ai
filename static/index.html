@@ -6,17 +6,17 @@
   <meta name="theme-color" content="#09151e" />
   <title>SmartPay AI — smarter shopping, safer checkout</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/styles.css" />
-  <script src="/static/app.js" defer></script>
+  <link rel="stylesheet" href="/static/styles.css?v=3.1" />
+  <script src="/static/app.js?v=3.1" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark">✳</span><div><strong>SMARTPAY<span class="accent">/AI</span></strong><small>Intelligent commerce lab</small></div></div>
       <div class="sidebar-label">EXPERIENCE</div>
-      <div class="nav-item selected"><span>◈</span> AI Shopping Agent</div>
-      <div class="nav-item"><span>◇</span> Risk Insights</div>
-      <div class="nav-item"><span>⇄</span> Checkout Sandbox</div>
+      <a class="nav-item selected" href="#shopping" data-nav="shopping"><span>◈</span> AI Shopping Agent</a>
+      <a class="nav-item" href="#insights" data-nav="insights"><span>◇</span> Risk Insights</a>
+      <a class="nav-item" href="#checkout" data-nav="checkout"><span>⇄</span> Checkout Sandbox</a>
       <div class="sidebar-bottom">
         <div class="sandbox-label"><span class="live-dot"></span> PAYPAL SANDBOX</div>
         <p>Experimental AI commerce.</p>
@@ -25,7 +25,7 @@
     </aside>
     <main class="main">
       <div class="topbar"><span>WORKSPACE <span class="subtle">/ AI COMMERCE</span></span><div class="top-right"><span class="env-pill">SANDBOX MODE</span><span class="avatar">SP</span></div></div>
-      <div class="content">
+      <div class="content" id="shopping">
         <div class="eyebrow"><span class="eyebrow-line"></span> YOUR AI PURCHASE COPILOT</div>
         <h1>Smarter decisions.<br><span>Safer checkout.</span></h1>
         <p class="intro">Describe what you need. Your agent discovers options, checks affordability, explains its reasoning, and prepares a payment <em>only when you approve</em>.</p>
@@ -53,8 +53,34 @@
           <div class="result-header"><div><span class="small-heading">YOUR AI ANALYSIS</span><h2>Recommended for you<span class="green-dot">.</span></h2></div><span id="ai-mode" class="mode-pill"></span></div>
           <div class="analysis-banner"><span class="analysis-icon">✦</span><div><strong>Agent reasoning</strong><p id="reasoning"></p></div></div>
           <div id="product-list" class="product-list"></div>
+          <section id="comparison" class="decision-panel" hidden>
+            <div class="decision-heading"><div><span class="small-heading">DECISION SUPPORT</span><h3>Compare your matches</h3></div><span class="mode-pill">ML-ranked shortlist</span></div>
+            <p class="decision-description">Compare catalogue features, relevance and budget impact before choosing.</p>
+            <div class="compare-scroll"><table id="comparison-table"></table></div>
+            <p id="comparison-note" class="decision-note"></p>
+          </section>
+          <section id="insights" class="decision-panel" hidden>
+            <div class="decision-heading"><div><span class="small-heading">◇ SMART BUDGET INSIGHTS</span><h3 id="insight-title">Budget impact</h3></div><span id="insight-badge" class="mode-pill"></span></div>
+            <div class="metric-grid">
+              <div class="metric"><span>Available funds</span><strong id="insight-available">—</strong></div>
+              <div class="metric"><span>Purchase cost</span><strong id="insight-price">—</strong></div>
+              <div class="metric"><span>Remaining after purchase</span><strong id="insight-remaining">—</strong></div>
+            </div>
+            <div class="impact-label"><span>Share of available funds</span><strong id="insight-percent"></strong></div>
+            <div class="impact-track" id="impact-track" role="progressbar" aria-label="Budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="impact-fill"></div></div>
+            <p id="insight-note" class="decision-note"></p>
+            <p class="fine-print">Illustrative analysis of your stated funds, not a bank balance or financial advice.</p>
+          </section>
           <div id="approval-info" class="info-note" hidden></div>
-          <div id="checkout" class="checkout" hidden><div class="checkout-head"><div><span class="small-heading">FINAL STEP</span><h3>Complete your sandbox payment</h3></div><span>🔒</span></div><p id="checkout-summary"></p><div id="paypal-button-container"></div><div id="checkout-status" role="status"></div></div>
+          <div id="checkout" class="checkout" hidden><div class="checkout-head"><div><span class="small-heading">FINAL STEP</span><h3>Complete your sandbox payment</h3></div><span>🔒</span></div><p id="checkout-summary"></p><button id="change-product" class="secondary-action" type="button">← Change product</button><div id="paypal-button-container"></div><div id="checkout-status" role="status"></div></div>
+          <section id="receipt" class="decision-panel receipt" hidden aria-live="polite">
+            <div class="decision-heading"><div><span class="small-heading">✓ PAYPAL SANDBOX · VERIFIED CAPTURE</span><h3>Purchase successful</h3></div><span class="receipt-badge">Completed</span></div>
+            <p id="receipt-product" class="decision-description"></p>
+            <div class="metric-grid"><div class="metric"><span>Total paid</span><strong id="receipt-paid"></strong></div><div class="metric"><span>Remaining funds (this purchase)</span><strong id="receipt-remaining"></strong></div><div class="metric"><span>Environment</span><strong class="small-value">Sandbox</strong></div></div>
+            <dl class="receipt-details"><dt>PayPal order ID</dt><dd id="receipt-order"></dd><dt>Capture ID</dt><dd id="receipt-capture"></dd></dl>
+            <p class="decision-note">Your payment was approved and captured. No real money was used. The remaining funds are an estimate for this purchase only.</p>
+            <button id="new-purchase" class="secondary-action" type="button">Start a new analysis →</button>
+          </section>
         </section>
         <p id="global-status" class="global-status" role="status" aria-live="polite"></p>
         <footer><span>© 2026 SmartPay AI · Hackathon prototype</span><span>Fictional catalogue · Not financial advice · Sandbox only</span></footer>
