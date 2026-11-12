@@ -10,9 +10,9 @@ client = TestClient(app)
 
 
 def test_budget_constraints():
-    results = rank_products('Auriculares bluetooth', 60, 45)
+    results = rank_products('Auriculares bluetooth', 60, 55)
     assert results
-    assert all(item['price'] <= 45 for item in results)
+    assert all(item['price'] <= 55 for item in results)
     assert rank_products('teclado', 5, 4) == []
 
 
@@ -53,3 +53,27 @@ def test_homepage_and_config_do_not_leak_secret(monkeypatch):
     assert 'public-test-id' in text
     assert 'super-secret-should-not-appear' not in text
     assert 'sandbox' in text
+
+
+def test_relevance_and_anc():
+    for query in ('I need an external SSD for backups', 'Quiero un SSD externo para copias de seguridad'):
+        results = rank_products(query, 100, 180)
+        assert len(results) == 2
+        assert all(p['product_type'] == 'storage' for p in results)
+    for query in ('I need noise-cancelling headphones for work', 'Busco auriculares con cancelación de ruido para trabajar'):
+        results = rank_products(query, 100, 180)
+        assert len(results) == 2
+        assert all(p['product_type'] == 'headphones' and p['anc'] for p in results)
+        affordable = rank_products(query, 60, 180)
+        assert len(affordable) == 1 and affordable[0]['sku'] == 'AUDIO-011'
+    assert rank_products('headphones', 40, 180) == []
+    assert rank_products('a refrigerator', 1000, 180) == []
+    assert [p['sku'] for p in rank_products('gaming keyboard', 100, 180)] == ['TECH-004']
+    assert [p['sku'] for p in rank_products('external SSD 1 TB', 100, 180)] == ['TECH-006']
+
+def test_product_artwork():
+    from catalog import CATALOG
+    for product in CATALOG:
+        response = client.get(product['image'])
+        assert response.status_code == 200
+    assert client.get('/static/favicon.svg').status_code == 200

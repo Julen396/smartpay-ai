@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#09151e" />
-  <title>SmartPay AI — compras inteligentes, pagos bajo control</title>
+  <title>SmartPay AI — smarter shopping, safer checkout</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
   <link rel="stylesheet" href="/static/styles.css" />
   <script src="/static/app.js" defer></script>
 </head>
@@ -34,11 +35,11 @@
             <div class="panel-heading"><div><div class="small-heading">NEW REQUEST <span class="tiny-line"></span> 001</div><h2>What are you looking for?</h2></div><span class="round-icon">✦</span></div>
             <form id="search-form">
               <label for="query">YOUR REQUEST</label>
-              <textarea id="query" required minlength="3" maxlength="300" rows="3" placeholder="I need noise-cancelling headphones for working, under €100...">Busco unos auriculares con cancelación de ruido para trabajar</textarea>
+              <textarea id="query" required minlength="3" maxlength="300" rows="3" placeholder="I need noise-cancelling headphones for working, under €100...">I need noise-cancelling headphones for work</textarea>
               <div class="form-grid"><div><label for="max-price">MAXIMUM PURCHASE (€)</label><div class="input-wrap"><span>€</span><input id="max-price" type="number" min="1" max="10000" step="0.01" value="100" required /></div></div><div><label for="available">MONTHLY FUNDS AVAILABLE (€)</label><div class="input-wrap"><span>€</span><input id="available" type="number" min="0" max="100000" step="0.01" value="180" required /></div></div></div>
               <button id="analyze" type="submit" class="primary">✧ &nbsp; Analyze my request <span>→</span></button>
             </form>
-            <div class="suggestions"><span>TRY THIS</span><button data-query="Quiero un SSD externo para hacer copias de seguridad">External SSD</button><button data-query="Necesito un teclado para programar y jugar">Gaming keyboard</button><button data-query="Busco auriculares cómodos para viajar">Travel headphones</button></div>
+            <div class="suggestions"><span>TRY THIS</span><button data-query="I need an external SSD for backups">External SSD</button><button data-query="I need a mechanical keyboard for coding and gaming">Gaming keyboard</button><button data-query="I need comfortable headphones for travel">Travel headphones</button></div>
           </section>
           <aside class="panel side-panel">
             <div class="small-heading">HOW IT WORKS</div><h3>Control stays<br>with you.</h3>

@@ -6,9 +6,11 @@ SmartPay AI turns a natural-language shopping request into an explainable, budge
 
 > All catalogue products and prices are fictional. This is a local proof of concept, not a merchant website, investment product, fraud-detection service, or source of financial advice. **Only PayPal Sandbox is supported: no real money.**
 
+Product illustrations are original SVG artwork created for this fictional catalogue; no real product imagery or live shop links are used.
+
 ## Features
 
-- **ML recommendation engine:** character n-gram TF-IDF retrieval matches natural-language requests to a fictional catalogue, including Spanish/English terms.
+- **ML recommendation engine:** English/Spanish product-type and ANC feature gates filter a fictional catalogue before character n-gram TF-IDF ranking; affordability is a secondary ranking signal. Unsupported requests return no results.
 - **Optional LLM reasoning:** an OpenAI-compatible API can explain the shortlisted options. The LLM has no authority to choose order amounts or execute payments. If no key is configured, deterministic ML-based explanations remain available.
 - **Budget guardrails:** every offer is filtered server-side against both a purchase cap and the available monthly discretionary budget.
 - **Human-in-the-loop:** explicit selection unlocks PayPal Checkout; the user separately approves the payment inside PayPal.
@@ -28,7 +30,7 @@ cp .env.example .env
 python -m uvicorn app:app --reload
 ```
 
-Open **http://127.0.0.1:8000** in a browser. Search for, say, `Busco auriculares con cancelación de ruido para trabajar`, with a €100 purchase limit and €180 available. The recommendation works **without any API key**.
+Open **http://127.0.0.1:8000** in a browser. Search for, say, `I need noise-cancelling headphones for work`, with a €100 purchase limit and €180 available. The recommendation works **without any API key**.
 
 ## Enable real PayPal *Sandbox* checkout
 

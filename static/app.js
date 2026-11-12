@@ -2,7 +2,7 @@
 const $ = (id) => document.getElementById(id);
 const state = { sessionId: null, recommendations: [], config: null, selected: null };
 function setStatus(text) { $('global-status').textContent = text || ''; }
-function euro(amount) { return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount); }
+function euro(amount) { return new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(amount); }
 function setStep(number) { for (let n=1; n<=4; n++) { $(`step${n}`).className = `step ${n===number ? 'current' : (n<number ? 'done' : '')}`; } }
 async function postJson(path, payload) {
   const r = await fetch(path, { method: 'POST', headers: {'Content-Type':'application/json'}, body:JSON.stringify(payload) });
@@ -13,9 +13,10 @@ async function postJson(path, payload) {
 }
 function renderProduct(p) {
   const card = document.createElement('article'); card.className = 'product';
-  const art = document.createElement('div'); art.className = 'product-icon'; art.textContent = p.icon; card.append(art);
+  const art = document.createElement('img'); art.className = 'product-image'; art.src = p.image; art.alt = `Illustration of ${p.name} (fictional demo product)`; card.append(art);
   const cat = document.createElement('div'); cat.className = 'product-category'; cat.textContent = p.category; card.append(cat);
   const title = document.createElement('h3'); title.textContent = p.name; card.append(title);
+  const desc = document.createElement('p'); desc.className = 'product-description'; desc.textContent = p.description; card.append(desc);
   const price = document.createElement('div'); price.className = 'product-price'; price.textContent = euro(p.price); card.append(price);
   const meta = document.createElement('div'); meta.className = 'product-meta';
   meta.textContent = `${p.risk.label} · ${p.match_score.toFixed(1)} ranking points`; card.append(meta);
@@ -35,7 +36,7 @@ async function analyze(event) {
     $('ai-mode').textContent = data.ai_mode.includes('llm+') ? '✦ LLM + ML enabled' : '✦ Local ML';
     for (const p of data.recommendations) $('product-list').append(renderProduct(p));
     if (!data.recommendations.length) {
-      const empty = document.createElement('p'); empty.textContent = 'No matches within your limits. Try a different request.'; $('product-list').append(empty);
+      const empty = document.createElement('p'); empty.textContent = 'No relevant matches within your limits. Try a supported product or adjust your budget.'; $('product-list').append(empty);
     }
     $('results-section').hidden = false; setStep(2);
     $('results-section').scrollIntoView({behavior:'smooth',block:'start'});

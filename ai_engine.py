@@ -4,6 +4,8 @@ The LLM can explain the recommendation but never controls product price,
 order creation, or whether a budget constraint can be bypassed.
 """
 import os
+import re
+import unicodedata
 import httpx
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -16,24 +18,57 @@ MATRIX = VECTORIZER.fit_transform(DOCUMENTS)
 
 def risk_assessment(price: float, monthly_available: float) -> dict:
     if price > monthly_available + 1e-7:
-        return {"level": "blocked", "label": "Supera tu presupuesto disponible", "ratio": round(price / max(monthly_available, .01), 2)}
+        return {"level": "blocked", "label": "Exceeds available funds", "ratio": round(price / max(monthly_available, .01), 2)}
     ratio = price / max(monthly_available, .01)
     if ratio >= .70:
-        return {"level": "high", "label": "Consumiría al menos el 70 % de tu presupuesto disponible", "ratio": round(ratio, 2)}
+        return {"level": "high", "label": "Uses at least 70% of available funds", "ratio": round(ratio, 2)}
     if ratio >= .35:
-        return {"level": "moderate", "label": "Compromiso moderado de presupuesto", "ratio": round(ratio, 2)}
-    return {"level": "low", "label": "Dentro de los límites introducidos", "ratio": round(ratio, 2)}
+        return {"level": "moderate", "label": "Moderate budget commitment", "ratio": round(ratio, 2)}
+    return {"level": "low", "label": "Within your stated limits", "ratio": round(ratio, 2)}
+
+
+# Type and feature gates precede ranking: never fill a shortlist with unrelated bargains.
+TYPE_TERMS = {
+    'headphones': r'headphones?|earbuds?|headsets?|auriculares?|cascos?',
+    'storage': r'ssd|storage|discos?|almacenamiento|hard drives?',
+    'keyboard': r'keyboards?|teclados?',
+    'mouse': r'mouse|mice|raton|ratones',
+    'speaker': r'speakers?|altavoces?|altavoz',
+    'lamp': r'lamps?|lamparas?',
+    'backpack': r'backpacks?|mochilas?',
+    'webcam': r'webcams?|cameras?|camaras?',
+    'microphone': r'microphones?|microfonos?|mics?',
+}
+
+
+def normalize(text: str) -> str:
+    return ''.join(c for c in unicodedata.normalize('NFKD', text.lower()) if not unicodedata.combining(c))
 
 
 def rank_products(query: str, max_price: float, monthly_available: float) -> list[dict]:
+    text = normalize(query)
+    types = {kind for kind, pattern in TYPE_TERMS.items() if re.search(r'\b(?:' + pattern + r')\b', text)}
+    # This small demo only supports its listed product types. Ask for a clearer request otherwise.
+    if not types:
+        return []
+    wants_anc = bool(re.search(r'\banc\b|noise[ -]cancel|cancelacion (?:activa )?de ruido|cancelar (?:el )?ruido', text))
+    wants_mechanical = bool(re.search(r'\b(?:mechanical|mecanico|mecanica|gaming)\b', text))
+    capacity = re.search(r'\b(500\s*gb|[12]\s*tb)\b', text)
     similarities = cosine_similarity(VECTORIZER.transform([query]), MATRIX)[0]
     out = []
     for product, relevance in zip(CATALOG, similarities):
+        if product['product_type'] not in types:
+            continue
+        if wants_anc and product['product_type'] == 'headphones' and not product['anc']:
+            continue
+        if wants_mechanical and product['product_type'] == 'keyboard' and product['sku'] != 'TECH-004':
+            continue
+        if capacity and product['product_type'] == 'storage' and re.sub(r'\s+', '', capacity.group(1)) not in re.sub(r'\s+', '', product['name'].lower()):
+            continue
         if product['price'] > max_price or product['price'] > monthly_available:
             continue
-        # Relevance dominates; affordable options receive a modest boost.
         affordability = 1 - product['price'] / max(max_price, .01)
-        score = .84 * float(relevance) + .16 * affordability
+        score = .90 * float(relevance) + .10 * affordability
         risk = risk_assessment(product['price'], monthly_available)
         out.append({**product, 'match_score': round(score * 100, 1), 'risk': risk})
     out.sort(key=lambda p: (-p['match_score'], p['price']))
@@ -42,10 +77,11 @@ def rank_products(query: str, max_price: float, monthly_available: float) -> lis
 
 def fallback_explanation(query: str, results: list[dict], max_price: float, monthly_available: float) -> str:
     if not results:
-        return 'No encuentro productos del catálogo de ejemplo que respeten los dos límites. Prueba aumentando el presupuesto o cambiando la búsqueda.'
+        return 'No relevant products in this demo catalogue meet your request and both spending limits. Try a supported product type or adjust your budget.'
     best = results[0]
-    base = f'Recomiendo {best["name"]}: es la opción mejor clasificada para «{query}» entre los productos que respetan los límites de {max_price:.2f} € por compra y {monthly_available:.2f} € disponibles.'
-    return base + f' Costaría {best["price"]:.2f} € y consumiría el {best["risk"]["ratio"] * 100:.0f} % del disponible indicado. Confirma tú mismo antes de pagar; la puntuación es orientativa.'
+    return (f'{best["name"]} is the highest-ranked match for your request: {best["description"]}. '
+            f'It costs €{best["price"]:.2f}, within your €{max_price:.2f} purchase limit and €{monthly_available:.2f} available funds. '
+            f'It uses {best["risk"]["ratio"] * 100:.0f}% of the available amount. Review and approve before paying.')
 
 
 async def explain_with_llm(query: str, results: list[dict], max_price: float, monthly_available: float) -> tuple[str, str]:
@@ -62,7 +98,7 @@ async def explain_with_llm(query: str, results: list[dict], max_price: float, mo
                 'temperature': .2,
                 'max_tokens': 180,
                 'messages': [
-                    {'role': 'system', 'content': 'You are SmartPay AI, a cautious shopping assistant. Answer in Spanish in 2-3 sentences. Only recommend items in the provided list. Never invent prices, inventory, guarantees or payment status. The user must approve payment. Never promise financial safety.'},
+                    {'role': 'system', 'content': 'You are SmartPay AI, a cautious shopping assistant. Answer in English in 2-3 sentences. Only recommend items in the provided list. Never invent prices, inventory, guarantees or payment status. The user must approve payment. Never promise financial safety.'},
                     {'role': 'user', 'content': f'Necesidad: {query}\nLímite por compra: {max_price:.2f} EUR\nDisponible: {monthly_available:.2f} EUR\nOpciones autorizadas:\n{products}\nExplica la mejor y una precaución presupuestaria.'},
                 ],
             })
