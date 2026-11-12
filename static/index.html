@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#09151e" />
+  <title>SmartPay AI — compras inteligentes, pagos bajo control</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">✳</span><div><strong>SMARTPAY<span class="accent">/AI</span></strong><small>Intelligent commerce lab</small></div></div>
+      <div class="sidebar-label">EXPERIENCE</div>
+      <div class="nav-item selected"><span>◈</span> AI Shopping Agent</div>
+      <div class="nav-item"><span>◇</span> Risk Insights</div>
+      <div class="nav-item"><span>⇄</span> Checkout Sandbox</div>
+      <div class="sidebar-bottom">
+        <div class="sandbox-label"><span class="live-dot"></span> PAYPAL SANDBOX</div>
+        <p>Experimental AI commerce.</p>
+        <p>No real money. All products are fictional.</p>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="topbar"><span>WORKSPACE <span class="subtle">/ AI COMMERCE</span></span><div class="top-right"><span class="env-pill">SANDBOX MODE</span><span class="avatar">SP</span></div></div>
+      <div class="content">
+        <div class="eyebrow"><span class="eyebrow-line"></span> YOUR AI PURCHASE COPILOT</div>
+        <h1>Smarter decisions.<br><span>Safer checkout.</span></h1>
+        <p class="intro">Describe what you need. Your agent discovers options, checks affordability, explains its reasoning, and prepares a payment <em>only when you approve</em>.</p>
+        <div class="stepper"><div class="step current" id="step1"><span class="step-number">01</span> Discover</div><i></i><div class="step" id="step2"><span class="step-number">02</span> Evaluate</div><i></i><div class="step" id="step3"><span class="step-number">03</span> Authorize</div><i></i><div class="step" id="step4"><span class="step-number">04</span> Pay</div></div>
+        <div class="workspace-grid">
+          <section class="panel panel-main">
+            <div class="panel-heading"><div><div class="small-heading">NEW REQUEST <span class="tiny-line"></span> 001</div><h2>What are you looking for?</h2></div><span class="round-icon">✦</span></div>
+            <form id="search-form">
+              <label for="query">YOUR REQUEST</label>
+              <textarea id="query" required minlength="3" maxlength="300" rows="3" placeholder="I need noise-cancelling headphones for working, under €100...">Busco unos auriculares con cancelación de ruido para trabajar</textarea>
+              <div class="form-grid"><div><label for="max-price">MAXIMUM PURCHASE (€)</label><div class="input-wrap"><span>€</span><input id="max-price" type="number" min="1" max="10000" step="0.01" value="100" required /></div></div><div><label for="available">MONTHLY FUNDS AVAILABLE (€)</label><div class="input-wrap"><span>€</span><input id="available" type="number" min="0" max="100000" step="0.01" value="180" required /></div></div></div>
+              <button id="analyze" type="submit" class="primary">✧ &nbsp; Analyze my request <span>→</span></button>
+            </form>
+            <div class="suggestions"><span>TRY THIS</span><button data-query="Quiero un SSD externo para hacer copias de seguridad">External SSD</button><button data-query="Necesito un teclado para programar y jugar">Gaming keyboard</button><button data-query="Busco auriculares cómodos para viajar">Travel headphones</button></div>
+          </section>
+          <aside class="panel side-panel">
+            <div class="small-heading">HOW IT WORKS</div><h3>Control stays<br>with you.</h3>
+            <div class="feature"><div class="feature-icon">◎</div><div><strong>AI-powered discovery</strong><p>Relevant picks from our fictional demo catalogue.</p></div></div>
+            <div class="feature"><div class="feature-icon">▣</div><div><strong>Budget guardrails</strong><p>Each recommendation respects your stated spending limits.</p></div></div>
+            <div class="feature"><div class="feature-icon">↗</div><div><strong>Human-approved payments</strong><p>Nothing is charged without explicit approval in PayPal.</p></div></div>
+            <div class="powered">POWERED BY <strong>AI + PayPal</strong></div>
+          </aside>
+        </div>
+        <section id="results-section" class="results" hidden aria-live="polite">
+          <div class="result-header"><div><span class="small-heading">YOUR AI ANALYSIS</span><h2>Recommended for you<span class="green-dot">.</span></h2></div><span id="ai-mode" class="mode-pill"></span></div>
+          <div class="analysis-banner"><span class="analysis-icon">✦</span><div><strong>Agent reasoning</strong><p id="reasoning"></p></div></div>
+          <div id="product-list" class="product-list"></div>
+          <div id="approval-info" class="info-note" hidden></div>
+          <div id="checkout" class="checkout" hidden><div class="checkout-head"><div><span class="small-heading">FINAL STEP</span><h3>Complete your sandbox payment</h3></div><span>🔒</span></div><p id="checkout-summary"></p><div id="paypal-button-container"></div><div id="checkout-status" role="status"></div></div>
+        </section>
+        <p id="global-status" class="global-status" role="status" aria-live="polite"></p>
+        <footer><span>© 2026 SmartPay AI · Hackathon prototype</span><span>Fictional catalogue · Not financial advice · Sandbox only</span></footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
